@@ -16,8 +16,10 @@ import { Input } from "@/components/ui/input";
 import { UserValidation } from "@/lib/validations/user";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { Textarea } from "../ui/textarea";
+import { isBase64Image } from "@/lib/utils";
+import {useUploadThing} from "@/lib/uploadthing";
 
 interface Props{
     user:{
@@ -32,22 +34,49 @@ interface Props{
 }
 
 const AccountProfile=({user,btnTitle}:Props)=>{
-    const form=useForm({
+  const[files, setFiles]=useState<File[]>([])
+
+
+    const form=useForm<z.infer<typeof UserValidation>>({
         resolver:zodResolver(UserValidation),
         defaultValues:{
-            profile_photo: user?.image || "",
-            name: user?.name || "",
-            username: user?.username || "",
-            bio: user?.bio || "",
+          profile_photo: user?.image ? user.image : "",
+          name: user?.name ? user.name : "",
+          username: user?.username ? user.username : "",
+          bio: user?.bio ? user.bio : "",
         }
     })
 
     function onSubmit(values: z.infer<typeof UserValidation>) {
-        console.log(values)
+        const blob=values.profile_photo;
+        const hasImageChanged=isBase64Image(blob);
+
+        if(hasImageChanged){
+          const imgRes=
+        }
       }
 
-      const handleImage = (e: ChangeEvent, fieldChange: (value: string) => void) => {
+      const handleImage = (e: ChangeEvent<HTMLInputElement>,
+        fieldChange: (value: string) => void) => {
         e.preventDefault();
+
+        const fileReader=new FileReader();
+
+        if(e.target.files && e.target.files.length > 0){
+          const file =e.target.files[0];
+
+          setFiles(Array.from(e.target.files));
+
+          if(!file.type.includes('image')) return;
+
+          fileReader.onload=async(event)=>{
+            const imageDataUrl=event.target?.result?.toString()||'';
+
+            fieldChange(imageDataUrl);
+
+          }
+          fileReader.readAsDataURL(file);
+        }
       }
 
     return(
@@ -81,11 +110,11 @@ const AccountProfile=({user,btnTitle}:Props)=>{
                   />
                 )}
               </FormLabel>
-              <FormControl className="flex-1 text-based-semibold text-gray-200">
+              <FormControl className="flex-1 text-base-semibold text-gray-200">
                 <Input
                    type='file'
                    accept='image/*'
-                   placeholder='Add profile photo'
+                   placeholder='Upload a photo'
                    className='account-form_image-input'
                    onChange={(e) => handleImage(e, field.onChange)}
                  />
@@ -150,7 +179,7 @@ const AccountProfile=({user,btnTitle}:Props)=>{
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit" className="bg-primary-500">Submit</Button>
       </form>
     </Form>
   )
