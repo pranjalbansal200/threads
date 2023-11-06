@@ -4,7 +4,7 @@ import { currentUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 
-async function page() {
+async function Page() {
     const user = await currentUser();
 
     if (!user) return null;
@@ -26,4 +26,4 @@ async function page() {
     
 }
 
-export default page;
+export default Page;
