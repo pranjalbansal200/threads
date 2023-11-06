@@ -19,8 +19,9 @@ async function page({ params }: { params: { id: string } }) {
     {
         redirect('/onboarding');
     }
+    console.log(userInfo.threads.length);
 
-    // console.log(userInfo.username);
+    
     return(
         <section>
             <ProfileHeader
